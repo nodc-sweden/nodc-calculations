@@ -1,5 +1,5 @@
 [project]
-name = "nodc_calculations"
+name = "nodc-calculations"
 version = "0.1.0"
 description = "Functions to calculate physical, chemical and biological in the marine envrionment"
 authors = [
@@ -7,6 +7,8 @@ authors = [
 ]
 dependencies = [
     "pandas>=2.2.3",
+    "seawater>=3.3.5",
+    "gsw>=3.6.19",
 ]
 requires-python = ">=3.9"
 readme = "README.md"

@@ -1,4 +1,4 @@
-# nodc_calculations
+# nodc-calculations
 
 This repository stores functions to calculate physical, chemical and biological oceanographic parameters.
 
