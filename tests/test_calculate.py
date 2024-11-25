@@ -255,19 +255,19 @@ from nodc_calculations import calculate
 @pytest.mark.parametrize(
     "given_data, expected_o2",
     (
-        # case 1: h2s and nh4 valid, use only nh4
+        # case 1: h2s and o2 BTL valid, use default h2s (0.01)
         (
             {
                 "h2s": [5],
                 "qh2s": ["1_0"],
-                "o2_btl": [5],
+                "o2_btl": [2],
                 "qo2_btl": ["1_0"],                
                 "o2_ctd": [np.nan],
                 "qo2_ctd": ["1_0"],
             },
-            5.0,
+            0.01,
         ),
-        # case 2: no h2s or nh4, below det o2, correct nox, stb use nh4
+        # case 2: no valid h2s (S|B|<|z) and  o2 <, use default h2s (0.01)
         (
             {
                 "h2s": [5],
@@ -278,6 +278,138 @@ from nodc_calculations import calculate
                 "qo2_ctd": ["1_0"],
             },
             0.01,
+        ),
+        # case 3: h2s < and o2 <, use default h2s (0.01)
+        (
+            {
+                "h2s": [5],
+                "qh2s": ["<_0"],
+                "o2_btl": [0.5],
+                "qo2_btl": ["<_0"],
+                "o2_ctd": [np.nan],
+                "qo2_ctd": ["1_0"],
+            },
+            0.01,
+        ),
+        # case 4: h2s < and o2 valid, use o2
+        (
+                {
+                    "h2s": [5],
+                    "qh2s": ["<_0"],
+                    "o2_btl": [0.5],
+                    "qo2_btl": ["1_0"],
+                    "o2_ctd": [np.nan],
+                    "qo2_ctd": ["1_0"],
+                },
+                0.5,
+        ),
+        # case 5: h2s is nan and o2 valid, use o2
+        (
+                {
+                    "h2s": [np.nan],
+                    "qh2s": ["1_0"],
+                    "o2_btl": [0.5],
+                    "qo2_btl": ["1_0"],
+                    "o2_ctd": [np.nan],
+                    "qo2_ctd": ["1_0"],
+                },
+                0.5,
+        ),
+        # case 6: h2s is valid and o2 nan, use h2s default (0.01)
+        (
+                {
+                    "h2s": [5],
+                    "qh2s": ["1_0"],
+                    "o2_btl": [np.nan],
+                    "qo2_btl": ["1_0"],
+                    "o2_ctd": [np.nan],
+                    "qo2_ctd": ["1_0"],
+                },
+                0.01,
+        ),
+        # case 7: o2 BTL is valid and o2 CTD is valid, use o2 BTL
+        (
+                {
+                    "h2s": [np.nan],
+                    "qh2s": ["1_0"],
+                    "o2_btl": [5],
+                    "qo2_btl": ["1_0"],
+                    "o2_ctd": [10],
+                    "qo2_ctd": ["1_0"],
+                },
+                5.0,
+        ),
+        # case 8: o2 BTL is not valid and o2 CTD is valid, use o2 CTD
+        (
+                {
+                    "h2s": [np.nan],
+                    "qh2s": ["1_0"],
+                    "o2_btl": [5],
+                    "qo2_btl": ["S"],
+                    "o2_ctd": [10],
+                    "qo2_ctd": ["1_0"],
+                },
+                10,
+        ),
+        # case 9: o2 BTL valid and o2 CTD is not valid, use o2 BTL
+        (
+                {
+                    "h2s": [np.nan],
+                    "qh2s": ["1_0"],
+                    "o2_btl": [5],
+                    "qo2_btl": ["1_0"],
+                    "o2_ctd": [10],
+                    "qo2_ctd": ["S"],
+                },
+                5.0,
+        ),
+        # case 10: all are non valid
+        (
+                {
+                    "h2s": [np.nan],
+                    "qh2s": ["1_0"],
+                    "o2_btl": [np.nan],
+                    "qo2_btl": ["1_0"],
+                    "o2_ctd": [np.nan],
+                    "qo2_ctd": ["1_0"],
+                },
+                np.nan,
+        ),
+        # case 11: h2s valid, o2 btl nan and o2 CTD valid
+        (
+                {
+                    "h2s": [5],
+                    "qh2s": ["1_0"],
+                    "o2_btl": [np.nan],
+                    "qo2_btl": ["1_0"],
+                    "o2_ctd": [10],
+                    "qo2_ctd": ["1_0"],
+                },
+                0.01,
+        ),
+        # case 12: h2s invalid, o2 btl nan and o2 <CTD valid
+        (
+                {
+                    "h2s": [5],
+                    "qh2s": ["S_0"],
+                    "o2_btl": [np.nan],
+                    "qo2_btl": ["1_0"],
+                    "o2_ctd": [10],
+                    "qo2_ctd": ["<_0"],
+                },
+                0.01,
+        ),
+        # case 13: h2s valid and >, o2 btl valid and o2 <CTD valid gives h2s 0.01
+        (
+                {
+                    "h2s": [100],
+                    "qh2s": [">_0"],
+                    "o2_btl": [2],
+                    "qo2_btl": ["1_0"],
+                    "o2_ctd": [10],
+                    "qo2_ctd": ["1_0"],
+                },
+                0.01,
         ),
     ),
 )
