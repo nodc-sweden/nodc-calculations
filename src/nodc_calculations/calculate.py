@@ -6,6 +6,39 @@ import pandas as pd
 import numpy as np
 from nodc_calculations.convert import oxygen_ml2umol
 
+def DIVA_oxygen(data: pd.DataFrame):
+
+    valid_btl = np.logical_and(~pd.isna(data.o2_btl), ~data.qo2_btl.str.contains("B|S"))
+    below_det_btl = np.logical_and(~pd.isna(data.o2_btl), data.qo2_btl.str.contains("<"))
+    valid_ctd = np.logical_and(~pd.isna(data.o2_ctd), ~data.qo2_ctd.str.contains("B|S"))
+    below_det_ctd = np.logical_and(~pd.isna(data.o2_ctd), data.qo2_ctd.str.contains("<"))
+    valid_h2s = np.logical_and(~pd.isna(data.h2s), ~data.qh2s.str.contains("B|S"))
+    below_det_h2s = np.logical_and(~pd.isna(data.h2s), data.qh2s.str.contains("<"))
+
+    # Apply nested np.where for all conditions
+    data["o2"] = np.where(
+        np.logical_or((~pd.isna(data.h2s)) & (~data.qh2s.str.contains('S|<') & ~valid_btl), below_det_h2s & below_det_btl),
+        0.01,
+        np.where(
+            (~below_det_h2s) & (pd.isna(data.o2_btl)),
+            0.01,
+            np.where(
+                (below_det_h2s) & (~pd.isna(data.o2_btl)),
+                data.o2_btl,
+                np.where(
+                    (~pd.isna(data.o2_btl)) & (~data.qo2_btl.str.contains('S')),
+                    data.o2_btl,
+                    np.where(
+                        (~pd.isna(data.o2_ctd)) & (~data.qo2_ctd.str.contains('S')),
+                        data.o2_ctd,
+                        np.nan  # Default case
+                    )
+                )
+            )
+        )
+    )
+
+    return data
 
 def get_DIN(data: dict):
     """
