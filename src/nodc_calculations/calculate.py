@@ -94,16 +94,16 @@ def dissolved_inorganic_nitrogen(df: pd.DataFrame):
     """
 
     # define booleans for valid data and lmtq for nox, no3, no2
-    valid_no3 = np.logical_and(~pd.isna(df.no3), ~df.qno3.str.contains("4|3"))
-    below_det_no3 = np.logical_and(~pd.isna(df.no3), df.qno3.str.contains("6"))
+    valid_no3 = np.logical_and(~pd.isna(df.no3), ~df.qno3.str.contains("4|3|B|S"))
+    below_det_no3 = np.logical_and(~pd.isna(df.no3), df.qno3.str.contains("6|<"))
 
-    valid_no2 = np.logical_and(~pd.isna(df.no2), ~df.qno2.str.contains("4|3"))
-    below_det_no2 = np.logical_and(~pd.isna(df.no2), df.qno2.str.contains("6"))
+    valid_no2 = np.logical_and(~pd.isna(df.no2), ~df.qno2.str.contains("4|3|B|S"))
+    below_det_no2 = np.logical_and(~pd.isna(df.no2), df.qno2.str.contains("6|<"))
 
-    valid_nox = np.logical_and(~pd.isna(df.nox), ~df.qnox.str.contains("4|3"))
-    below_det_nox = np.logical_and(~pd.isna(df.nox), df.qnox.str.contains("6"))
+    valid_nox = np.logical_and(~pd.isna(df.nox), ~df.qnox.str.contains("4|3|B|S"))
+    below_det_nox = np.logical_and(~pd.isna(df.nox), df.qnox.str.contains("6|<"))
 
-    # Create noc column from no3+no2 when nox not valid
+    # Create nox column from no3+no2 when nox not valid
     df["nox_corrected"] = np.where(
         pd.isna(df.nox)
         & below_det_no3
@@ -111,7 +111,7 @@ def dissolved_inorganic_nitrogen(df: pd.DataFrame):
         df.no3,
         np.where(
             pd.isna(df.nox) & valid_no3,  # at least no3 valid
-            np.nansum([df.no3, df.no2]),
+            np.nansum([df.no3, df.no2], axis=0),
             np.where(
                 valid_nox,
                 df.nox,  # nox valid
@@ -122,10 +122,10 @@ def dissolved_inorganic_nitrogen(df: pd.DataFrame):
 
     # define booleans for valid data and lmtq for other parameters
     valid_nox_corrected = ~pd.isna(df.nox_corrected)
-    valid_h2s = np.logical_and(~pd.isna(df.h2s), ~df.qh2s.str.contains("6|4|3"))
-    valid_nh4 = np.logical_and(~pd.isna(df.nh4), ~df.qnh4.str.contains("4|3"))
-    below_det_nh4 = np.logical_and(~pd.isna(df.nh4), df.qnh4.str.contains("6"))
-    valid_low_o2 = np.logical_and(df.o2 <= 2, ~df.qo2.str.contains("4|3"))
+    valid_h2s = np.logical_and(~pd.isna(df.h2s), ~df.qh2s.str.contains("6|4|3|B|S|<"))
+    valid_nh4 = np.logical_and(~pd.isna(df.nh4), ~df.qnh4.str.contains("4|3|B|S"))
+    below_det_nh4 = np.logical_and(~pd.isna(df.nh4), df.qnh4.str.contains("6|<"))
+    valid_low_o2 = np.logical_and(df.o2 <= 2, ~df.qo2.str.contains("4|3|B|S"))
 
     df["din"] = np.nan
 

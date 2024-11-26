@@ -202,6 +202,40 @@ def test_din(given_data, expected_din):
 
 
 @pytest.mark.parametrize(
+    "given_data, expected_din",
+    (
+        # case 1: h2s and nh4 valid, use only nh4
+        (
+            {
+                "h2s": [np.nan, np.nan],
+                "qh2s": ["1_0", "1_0"],
+                "nh4": [1, 3],
+                "qnh4": ["6_0", "1_0"],
+                "o2": [6, 6],
+                "qo2": ["1_0", "1_0"],
+                "nox": [np.nan, np.nan],
+                "qnox": ["1_0", "1_0"],
+                "no3": [2, 2],
+                "qno3": ["1_0", "1_0"],
+                "no2": [1, 1],
+                "qno2": ["1_0", "1_0"],
+            },
+            {"din": [3.0, 6.0]},
+        ),
+    )
+)
+def test_din_return_row_sum(given_data, expected_din):
+    data = pd.DataFrame(given_data)
+    expected_data = pd.DataFrame(expected_din)
+
+    calculate.dissolved_inorganic_nitrogen(data)
+    print(data)
+    # test function against expected
+    np.testing.assert_equal(data["din"].values[0], expected_data["din"].values[0])
+    np.testing.assert_equal(data["din"].values[1], expected_data["din"].values[1])
+
+
+@pytest.mark.parametrize(
     "given_data, expected_oxysat",
     (
         # case 1: all valid
