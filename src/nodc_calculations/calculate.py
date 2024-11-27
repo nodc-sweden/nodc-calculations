@@ -10,156 +10,156 @@ from nodc_calculations.convert import oxygen_ml2umol
 def get_DIN(data: dict):
     """
     Returns a vector calculated DIN.
-    If H2S is present NH4 is returned
-    If NO3 is not present value is np.nan
-    If no H2S and NH4 qflag is < nox is returned
+    If H2S is present AMON is returned
+    If NTRS is not present value is np.nan
+    If no H2S and NH4 Q_flag is < NTRZ is returned
     """
 
-    no2 = data["no2"][0]
-    no3 = data["no3"][0]
-    nox = data["nox"][0]
-    nh4 = data["nh4"][0]
-    h2s = data["h2s"][0]
-    qh2s = data["qh2s"][0].split("_")[0]
-    o2 = data["o2"][0]
-    qo2 = data["qo2"][0].split("_")[0]
-    qnh4 = data["qnh4"][0].split("_")[0]
-    qno3 = data["qno3"][0].split("_")[0]
+    NTRI = data["NTRI"][0]
+    NTRA = data["NTRA"][0]
+    NTRZ = data["NTRZ"][0]
+    AMON = data["AMON"][0]
+    H2S = data["H2S"][0]
+    Q_H2S = data["Q_H2S"][0].split("_")[0]
+    doxy = data["doxy"][0]
+    Q_doxy = data["Q_doxy"][0].split("_")[0]
+    Q_AMON = data["Q_AMON"][0].split("_")[0]
+    Q_NTRA = data["Q_NTRA"][0].split("_")[0]
 
-    if not np.isnan(h2s) and any(
-        [qh2s not in ["6", "4", "3"], (qh2s == "6" and qno3 in ["4", "6", "3"])]
+    if not np.isnan(H2S) and any(
+        [Q_H2S not in ["6", "4", "3"], (Q_H2S == "6" and Q_NTRA in ["4", "6", "3"])]
     ):
-        if any([np.isnan(nh4), qnh4 in ["4", "3"]]):
+        if any([np.isnan(AMON), Q_AMON in ["4", "3"]]):
             din = np.nan
         else:
-            din = nh4
-    elif o2 < 2.0 and qo2 not in ["4", "3"]:
-        if any([np.isnan(nh4), qnh4 in ["4", "3"]]):
+            din = AMON
+    elif doxy < 2.0 and Q_doxy not in ["4", "3"]:
+        if any([np.isnan(AMON), Q_AMON in ["4", "3"]]):
             din = np.nan
         else:
-            if np.isnan(nox):
+            if np.isnan(NTRZ):
                 din = np.nan
 
-                if not np.isnan(no3):
-                    if qno3 in ["4", "3"]:
+                if not np.isnan(NTRA):
+                    if Q_NTRA in ["4", "3"]:
                         din = np.nan
                     else:
-                        din = no3
+                        din = NTRA
 
-                    if not np.isnan(no2) and not np.isnan(din):
-                        din += no2
+                    if not np.isnan(NTRI) and not np.isnan(din):
+                        din += NTRI
 
                     if (
-                        not np.isnan(nh4)
-                        and qnh4 not in ["6", "4", "3"]
+                        not np.isnan(AMON)
+                        and Q_AMON not in ["6", "4", "3"]
                         and not np.isnan(din)
                     ):
-                        din += nh4
+                        din += AMON
             else:
-                din = nox
+                din = NTRZ
 
-                if not np.isnan(nh4) and qnh4 not in ["6", "4", "3"]:
-                    din += nh4
+                if not np.isnan(AMON) and Q_AMON not in ["6", "4", "3"]:
+                    din += AMON
     else:
-        if np.isnan(nox):
+        if np.isnan(NTRZ):
             din = np.nan
 
-            if not np.isnan(no3):
-                if qno3 in ["4", "3"]:
+            if not np.isnan(NTRA):
+                if Q_NTRA in ["4", "3"]:
                     din = np.nan
                 else:
-                    din = no3
+                    din = NTRA
 
-                if not np.isnan(no2) and not np.isnan(din):
-                    din += no2
+                if not np.isnan(NTRI) and not np.isnan(din):
+                    din += NTRI
 
                 if (
-                    not np.isnan(nh4)
-                    and qnh4 not in ["6", "4", "3"]
+                    not np.isnan(AMON)
+                    and Q_AMON not in ["6", "4", "3"]
                     and not np.isnan(din)
                 ):
-                    din += nh4
+                    din += AMON
         else:
-            din = nox
+            din = NTRZ
 
-            if not np.isnan(nh4) and qnh4 not in ["6", "4", "3"]:
-                din += nh4
+            if not np.isnan(AMON) and Q_AMON not in ["6", "4", "3"]:
+                din += AMON
 
     return float(din)
 
 
 def dissolved_inorganic_nitrogen(df: pd.DataFrame):
     """
-    Calculates DIN values based on nitrogen components, oxygen and hydroggen sulphide and quality flags
+    Calculates DIN values based on nitrogen components, oxygen and hydroggen sulphide and Q_uality flags
     """
 
-    # define booleans for valid data and lmtq for nox, no3, no2
-    valid_no3 = np.logical_and(~pd.isna(df.no3), ~df.qno3.str.contains("4|3|B|S"))
-    below_det_no3 = np.logical_and(~pd.isna(df.no3), df.qno3.str.contains("6|<"))
+    # define booleans for valid data and lmtQ_ for NTRZ, NTRA, NTRI
+    valid_NTRA = np.logical_and(~pd.isna(df.NTRA), ~df.Q_NTRA.str.contains("4|3|B|S"))
+    below_det_NTRA = np.logical_and(~pd.isna(df.NTRA), df.Q_NTRA.str.contains("6|<"))
 
-    valid_no2 = np.logical_and(~pd.isna(df.no2), ~df.qno2.str.contains("4|3|B|S"))
-    below_det_no2 = np.logical_and(~pd.isna(df.no2), df.qno2.str.contains("6|<"))
+    valid_NTRI = np.logical_and(~pd.isna(df.NTRI), ~df.Q_NTRI.str.contains("4|3|B|S"))
+    below_det_NTRI = np.logical_and(~pd.isna(df.NTRI), df.Q_NTRI.str.contains("6|<"))
 
-    valid_nox = np.logical_and(~pd.isna(df.nox), ~df.qnox.str.contains("4|3|B|S"))
-    below_det_nox = np.logical_and(~pd.isna(df.nox), df.qnox.str.contains("6|<"))
+    valid_NTRZ = np.logical_and(~pd.isna(df.NTRZ), ~df.Q_NTRZ.str.contains("4|3|B|S"))
+    below_det_NTRZ = np.logical_and(~pd.isna(df.NTRZ), df.Q_NTRZ.str.contains("6|<"))
 
-    # Create nox column from no3+no2 when nox not valid
-    df["nox_corrected"] = np.where(
-        pd.isna(df.nox)
-        & below_det_no3
-        & below_det_no2,  # both below lmtq
-        df.no3,
+    # Create NTRZ column from NTRA+NTRI when NTRZ not valid
+    df["NTRZ_corrected"] = np.where(
+        pd.isna(df.NTRZ)
+        & below_det_NTRA
+        & below_det_NTRI,  # both below lmtQ_
+        df.NTRA,
         np.where(
-            pd.isna(df.nox) & valid_no3,  # at least no3 valid
-            np.nansum([df.no3, df.no2], axis=0),
+            pd.isna(df.NTRZ) & valid_NTRA,  # at least NTRA valid
+            np.nansum([df.NTRA, df.NTRI], axis=0),
             np.where(
-                valid_nox,
-                df.nox,  # nox valid
+                valid_NTRZ,
+                df.NTRZ,  # NTRZ valid
                 np.nan,
             ),
         ),
     )
 
-    # define booleans for valid data and lmtq for other parameters
-    valid_nox_corrected = ~pd.isna(df.nox_corrected)
-    valid_h2s = np.logical_and(~pd.isna(df.h2s), ~df.qh2s.str.contains("6|4|3|B|S|<"))
-    valid_nh4 = np.logical_and(~pd.isna(df.nh4), ~df.qnh4.str.contains("4|3|B|S"))
-    below_det_nh4 = np.logical_and(~pd.isna(df.nh4), df.qnh4.str.contains("6|<"))
-    valid_low_o2 = np.logical_and(df.o2 <= 2, ~df.qo2.str.contains("4|3|B|S"))
+    # define booleans for valid data and lmtQ_ for other parameters
+    valid_NTRZ_corrected = ~pd.isna(df.NTRZ_corrected)
+    valid_H2S = np.logical_and(~pd.isna(df.H2S), ~df.Q_H2S.str.contains("6|4|3|B|S|<"))
+    valid_AMON = np.logical_and(~pd.isna(df.AMON), ~df.Q_AMON.str.contains("4|3|B|S"))
+    below_det_AMON = np.logical_and(~pd.isna(df.AMON), df.Q_AMON.str.contains("6|<"))
+    valid_low_doxy = np.logical_and(df.doxy <= 2, ~df.Q_doxy.str.contains("4|3|B|S"))
 
     df["din"] = np.nan
 
     # Fall där H2S är giltigt och NH4 är giltigt
-    df.loc[valid_h2s & valid_nh4, "din"] = df.nh4
+    df.loc[valid_H2S & valid_AMON, "din"] = df.AMON
 
     # Steg 2: I låga syrehalter beräkna din endast
-    # om nh4 finns, antingen som summa nh4+nox_corrected eller endast som nh4 om nox_corrected är nan.
+    # om AMON finns, antingen som summa AMON+NTRZ_corrected eller endast som AMON om NTRZ_corrected är nan.
     df["din"] = np.where(
-        valid_low_o2 & valid_nh4,
-        np.nansum([df.nox_corrected, df.nh4], axis=0),
+        valid_low_doxy & valid_AMON,
+        np.nansum([df.NTRZ_corrected, df.AMON], axis=0),
         df.din,  # Om inget av ovanstående gäller, lämna som `din`
     )
 
     # Typiskt sommaren när alla är under det
     df["din"] = np.where(
-        (below_det_nox | below_det_no3)
-        & below_det_nh4
-        & ~pd.isna(df.nox_corrected),  # Använd nox_corrected + nh4 om båda är giltiga
-        df.nox_corrected,
+        (below_det_NTRZ | below_det_NTRA)
+        & below_det_AMON
+        & ~pd.isna(df.NTRZ_corrected),  # Använd NTRZ_corrected + AMON om båda är giltiga
+        df.NTRZ_corrected,
         df.din,  # Om inget av ovanstående gäller, lämna som `din`
     )
 
-    # Övriga fall där nox används som huvudsaklig parameter
+    # Övriga fall där NTRZ används som huvudsaklig parameter
     df["din"] = np.where(
-        valid_nh4
-        & ~valid_low_o2
-        & ~valid_h2s
-        & ~below_det_nh4
-        & ~pd.isna(df.nox_corrected),  # Använd nox_corrected + nh4 om båda är giltiga
-        df.nox_corrected + df.nh4,
+        valid_AMON
+        & ~valid_low_doxy
+        & ~valid_H2S
+        & ~below_det_AMON
+        & ~pd.isna(df.NTRZ_corrected),  # Använd NTRZ_corrected + AMON om båda är giltiga
+        df.NTRZ_corrected + df.AMON,
         np.where(
-            ~valid_low_o2 & ~valid_h2s & below_det_nh4 & ~pd.isna(df.nox_corrected),
-            df.nox_corrected,
+            ~valid_low_doxy & ~valid_H2S & below_det_AMON & ~pd.isna(df.NTRZ_corrected),
+            df.NTRZ_corrected,
             df.din,
         ),  # Om inget av ovanstående gäller, lämna som `din`
     )
@@ -172,17 +172,17 @@ def density(df: pd.DataFrame):
     the sea pressure calculated from depth and latitude has very little effect on the results
     use constant latitude, comnsider using constant z as well
     """
-    df.loc[:, "density"]  = pot_rho_t_exact(df.SALT, df.TEMP, p_from_z(-df.DEPH, 58), 0)
+    df.loc[:, "density"]  = pot_rho_t_exact(df.salt, df.temp, p_from_z(-df.depth, 58), 0)
 
 
 
 def oxygen_saturation(df: pd.DataFrame):
     # oxygen_ml2umol(df, oxygen_column_name=oxygen_column_name)
-    pt = pt_from_CT(df.SALT, df.TEMP)
+    pt = pt_from_CT(df.salt, df.temp)
     density(df)
-    gsw = O2sol_SP_pt(df.SALT, pt) * (df.density/1000) / 44.661
-    sw = satO2(df.SALT, df.TEMP)
+    gsw = O2sol_SP_pt(df.salt, pt) * (df.density/1000) / 44.661
+    sw = satO2(df.salt, df.temp)
 
-    df.loc[:, f"oxygen_saturation"] = df.DOXY_BTL / gsw * 100
+    df.loc[:, f"oxygen_saturation"] = df.doxy / gsw * 100
 
     return gsw, sw, df
