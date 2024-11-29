@@ -411,6 +411,18 @@ from nodc_calculations import calculate
                 },
                 0.01,
         ),
+        # case 14: h2s, ctd np.nan and o2 valid < gives h2s 0.01
+        (
+                {
+                    "h2s": [np.nan],
+                    "qh2s": ["1_0"],
+                    "o2_btl": [2],
+                    "qo2_btl": ["<_0"],
+                    "o2_ctd": [np.nan],
+                    "qo2_ctd": ["1_0"],
+                },
+                0.01,
+        ),
     ),
 )
 def test_diva_oxygen(given_data, expected_o2):

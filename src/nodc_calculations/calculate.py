@@ -22,8 +22,7 @@ def DIVA_oxygen(data: pd.DataFrame):
             # h2s not valid and o2< gives h2s default (0.01)
             np.where((~valid_h2s) & (below_det_btl), 0.01,
                 #  o2 BTL is valid gives o2 BTL
-                np.where((valid_btl),
-                    data.o2_btl,
+                np.where((valid_btl), data.o2_btl,
                     # O2 CTD exists and O2 CTD is not S gives O2 CTD
                     np.where((valid_ctd),
                         data.o2_ctd,
