@@ -1,6 +1,6 @@
 [project]
 name = "nodc-calculations"
-version = "0.1.0"
+version = "v2025.1.0"
 description = "Functions to calculate physical, chemical and biological in the marine envrionment"
 authors = [
     {name = "Lena Viktorsson", email = "lena.viktorsson@smhi.se"},
