@@ -7,8 +7,9 @@ import numpy as np
 from nodc_calculations.convert import oxygen_ml2umol
 
 
-def get_DIN(data: dict):
+def _get_DIN(data: dict):
     """
+    This is the function from sharktoolbox, only here for comparison
     Returns a vector calculated DIN.
     If H2S is present AMON is returned
     If NTRS is not present value is np.nan
@@ -105,9 +106,7 @@ def dissolved_inorganic_nitrogen(df: pd.DataFrame):
 
     # Create NTRZ column from NTRA+NTRI when NTRZ not valid
     df["NTRZ_corrected"] = np.where(
-        pd.isna(df.NTRZ)
-        & below_det_NTRA
-        & below_det_NTRI,  # both below lmtQ_
+        pd.isna(df.NTRZ) & below_det_NTRA & below_det_NTRI,  # both below lmtQ_
         df.NTRA,
         np.where(
             pd.isna(df.NTRZ) & valid_NTRA,  # at least NTRA valid
@@ -144,7 +143,9 @@ def dissolved_inorganic_nitrogen(df: pd.DataFrame):
     df["din"] = np.where(
         (below_det_NTRZ | below_det_NTRA)
         & below_det_AMON
-        & ~pd.isna(df.NTRZ_corrected),  # Använd NTRZ_corrected + AMON om båda är giltiga
+        & ~pd.isna(
+            df.NTRZ_corrected
+        ),  # Använd NTRZ_corrected + AMON om båda är giltiga
         df.NTRZ_corrected,
         df.din,  # Om inget av ovanstående gäller, lämna som `din`
     )
@@ -155,7 +156,9 @@ def dissolved_inorganic_nitrogen(df: pd.DataFrame):
         & ~valid_low_doxy
         & ~valid_H2S
         & ~below_det_AMON
-        & ~pd.isna(df.NTRZ_corrected),  # Använd NTRZ_corrected + AMON om båda är giltiga
+        & ~pd.isna(
+            df.NTRZ_corrected
+        ),  # Använd NTRZ_corrected + AMON om båda är giltiga
         df.NTRZ_corrected + df.AMON,
         np.where(
             ~valid_low_doxy & ~valid_H2S & below_det_AMON & ~pd.isna(df.NTRZ_corrected),

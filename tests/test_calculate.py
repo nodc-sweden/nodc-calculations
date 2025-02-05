@@ -79,7 +79,8 @@ from nodc_calculations import calculate
             },
             np.nan,
         ),
-        # case 5: low correct doxy, AMON below det, set to sum of all
+        # case 5: low correct doxy, AMON below det, set to sum of all (AMON+NTRZ or AMON+NTRI+NTRA)
+        # this test differs to sharktoolbox get_din() which returns 3 (NTRZ) while the new function returns (AMON+NTRA) 
         (
             {
                 "H2S": [np.nan],
@@ -187,6 +188,24 @@ from nodc_calculations import calculate
             },
             11,
         ),
+        # case 11: AMON, NTRZ, NTRA, NTRI below det return NTRZ det
+        (
+            {
+                "H2S": [np.nan],
+                "Q_H2S": ["0_0"],
+                "AMON": [0.5],
+                "Q_AMON": ["6_0"],
+                "doxy": [8],
+                "Q_doxy": ["1_0"],
+                "NTRZ": [4],
+                "Q_NTRZ": ["6_0"],
+                "NTRA": [3],
+                "Q_NTRA": ["6_0"],
+                "NTRI": [2],
+                "Q_NTRI": ["6_0"],
+            },
+            4,
+        ),
     ),
 )
 def test_din(given_data, expected_din):
@@ -196,9 +215,10 @@ def test_din(given_data, expected_din):
     # test function against expected
     np.testing.assert_equal(data["din"].values[0], expected_din)
 
-    din = calculate.get_DIN(given_data)
-    # test stb against expected
-    np.testing.assert_equal(din, expected_din)
+    # turn on to test against sharktoolbox get_din function
+    # din = calculate._get_DIN(given_data)
+    # # test stb against expected
+    # np.testing.assert_equal(din, expected_din)
 
 
 @pytest.mark.parametrize(
