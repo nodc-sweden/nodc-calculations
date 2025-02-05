@@ -175,17 +175,79 @@ def density(df: pd.DataFrame):
     the sea pressure calculated from depth and latitude has very little effect on the results
     use constant latitude, comnsider using constant z as well
     """
-    df.loc[:, "density"]  = pot_rho_t_exact(df.salt, df.temp, p_from_z(-df.depth, 58), 0)
-
+    df.loc[:, "density"] = pot_rho_t_exact(df.salt, df.temp, p_from_z(-df.depth, 58), 0)
 
 
 def oxygen_saturation(df: pd.DataFrame):
     # oxygen_ml2umol(df, oxygen_column_name=oxygen_column_name)
     pt = pt_from_CT(df.salt, df.temp)
     density(df)
-    gsw = O2sol_SP_pt(df.salt, pt) * (df.density/1000) / 44.661
+    gsw = O2sol_SP_pt(df.salt, pt) * (df.density / 1000) / 44.661
     sw = satO2(df.salt, df.temp)
 
     df.loc[:, f"oxygen_saturation"] = df.doxy / gsw * 100
 
     return gsw, sw, df
+
+
+def oxygen(df: pd.DataFrame):
+    print(df)
+    valid_btl = np.logical_and(
+        ~pd.isna(df.DOXY_BTL), ~df.Q_DOXY_BTL.str.contains("B|S|<|4|3|6")
+    )
+    below_det_btl = np.logical_and(
+        ~pd.isna(df.DOXY_BTL), df.Q_DOXY_BTL.str.contains("<|6")
+    )
+    valid_ctd = np.logical_and(
+        ~pd.isna(df.DOXY_CTD), ~df.Q_DOXY_CTD.str.contains("B|S|<|4|3|6")
+    )
+    below_det_ctd = np.logical_and(
+        ~pd.isna(df.DOXY_CTD), df.Q_DOXY_CTD.str.contains("<")
+    )
+
+    # Handle missing columns for H2S and Q_H2S
+    if "H2S" in df.columns and "Q_H2S" in df.columns:
+        valid_h2s = np.logical_and(
+            ~pd.isna(df.H2S), ~df.Q_H2S.str.contains("B|S|Z|<|4|3|6")
+        )
+        below_det_h2s = np.logical_and(~pd.isna(df.H2S), df.Q_H2S.str.contains("<|6"))
+    elif "H2S" in df.columns:
+        valid_h2s = ~pd.isna(df.H2S)
+        below_det_h2s = False
+    else:
+        # If either column is missing, set valid_h2s to False
+        valid_h2s = False
+        below_det_h2s = False
+    
+    # Apply nested np.where for all conditions
+    df["oxygen"] = np.where(
+        # h2s valid-> h2s default (0)
+        valid_h2s,
+        0,
+        # both h2s and oxygen below det
+        np.where(
+            np.logical_and(
+                below_det_h2s,
+                np.logical_or(below_det_btl, ((below_det_ctd) & (~valid_btl))),
+            ),
+            0,
+            #  O2 BTL is valid -> O2 BTL
+            np.where(
+                np.logical_or(valid_btl, below_det_btl),
+                df.DOXY_BTL,
+                # O2 CTD exists and Q O2 CTD is not B|S|< -> O2 CTD
+                np.where(
+                    (valid_ctd),
+                    df.DOXY_CTD,
+                    np.where(
+                        (below_det_ctd),
+                        0,
+                        # Default case gives NaN
+                        np.nan,
+                    ),
+                ),
+            ),
+        ),
+    )
+    print(df)
+    return df

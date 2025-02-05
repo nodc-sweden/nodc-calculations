@@ -323,3 +323,183 @@ def test_oxygen_saturation_on_dataframe_with_many_rows(given_data, expected):
     _, _, _ = calculate.oxygen_saturation(data)
     print(data.head())
     assert(len(data['oxygen_saturation']) == len(data['doxy']))
+
+@pytest.mark.parametrize(
+    "given_data, expected_o2",
+    (
+        # case 1: H2S and o2 BTL valid, use default H2S (0)
+        (
+            {
+                "H2S": [5],
+                "Q_H2S": ["1_0"],
+                "DOXY_BTL": [2],
+                "Q_DOXY_BTL": ["1_0"],                
+                "DOXY_CTD": [np.nan],
+                "Q_DOXY_CTD": ["1_0"],
+            },
+            0,
+        ),
+        # case 2: H2S invalid (S or B) and o2 <, use default H2S (0)
+        (
+            {
+                "H2S": [5],
+                "Q_H2S": ["S_0"],
+                "DOXY_BTL": [0.5],
+                "Q_DOXY_BTL": ["<_0"],
+                "DOXY_CTD": [np.nan],
+                "Q_DOXY_CTD": ["1_0"],
+            },
+            0.5,
+        ),
+        # case 3: H2S < and o2 <, use default H2S (0)
+        (
+            {
+                "H2S": [5],
+                "Q_H2S": ["<_0"],
+                "DOXY_BTL": [0.5],
+                "Q_DOXY_BTL": ["<_0"],
+                "DOXY_CTD": [np.nan],
+                "Q_DOXY_CTD": ["1_0"],
+            },
+            0,
+        ),
+        # case 4: H2S < and o2 valid, use o2
+        (
+                {
+                    "H2S": [5],
+                    "Q_H2S": ["<_0"],
+                    "DOXY_BTL": [0.5],
+                    "Q_DOXY_BTL": ["1_0"],
+                    "DOXY_CTD": [np.nan],
+                    "Q_DOXY_CTD": ["1_0"],
+                },
+                0.5,
+        ),
+        # case 5: H2S is nan and o2 valid, use o2
+        (
+                {
+                    "H2S": [np.nan],
+                    "Q_H2S": ["1_0"],
+                    "DOXY_BTL": [0.5],
+                    "Q_DOXY_BTL": ["1_0"],
+                    "DOXY_CTD": [np.nan],
+                    "Q_DOXY_CTD": ["1_0"],
+                },
+                0.5,
+        ),
+        # case 6: H2S is valid and o2 nan, use H2S default (0)
+        (
+                {
+                    "H2S": [5],
+                    "Q_H2S": ["1_0"],
+                    "DOXY_BTL": [np.nan],
+                    "Q_DOXY_BTL": ["1_0"],
+                    "DOXY_CTD": [np.nan],
+                    "Q_DOXY_CTD": ["1_0"],
+                },
+                0,
+        ),
+        # case 7: o2 BTL is valid and o2 CTD is valid, use o2 BTL
+        (
+                {
+                    "H2S": [np.nan],
+                    "Q_H2S": ["1_0"],
+                    "DOXY_BTL": [5],
+                    "Q_DOXY_BTL": ["1_0"],
+                    "DOXY_CTD": [10],
+                    "Q_DOXY_CTD": ["1_0"],
+                },
+                5.0,
+        ),
+        # case 8: o2 BTL is not valid and o2 CTD is valid, use o2 CTD
+        (
+                {
+                    "H2S": [np.nan],
+                    "Q_H2S": ["1_0"],
+                    "DOXY_BTL": [5],
+                    "Q_DOXY_BTL": ["S"],
+                    "DOXY_CTD": [10],
+                    "Q_DOXY_CTD": ["1_0"],
+                },
+                10,
+        ),
+        # case 9: o2 BTL valid and o2 CTD is not valid, use o2 BTL
+        (
+                {
+                    "H2S": [np.nan],
+                    "Q_H2S": ["1_0"],
+                    "DOXY_BTL": [5],
+                    "Q_DOXY_BTL": ["1_0"],
+                    "DOXY_CTD": [10],
+                    "Q_DOXY_CTD": ["S"],
+                },
+                5.0,
+        ),
+        # case 10: all are non valid
+        (
+                {
+                    "H2S": [np.nan],
+                    "Q_H2S": ["1_0"],
+                    "DOXY_BTL": [np.nan],
+                    "Q_DOXY_BTL": ["1_0"],
+                    "DOXY_CTD": [np.nan],
+                    "Q_DOXY_CTD": ["1_0"],
+                },
+                np.nan,
+        ),
+        # case 11: H2S valid, o2 btl nan and o2 CTD valid
+        (
+                {
+                    "H2S": [5],
+                    "Q_H2S": ["1_0"],
+                    "DOXY_BTL": [np.nan],
+                    "Q_DOXY_BTL": ["1_0"],
+                    "DOXY_CTD": [10],
+                    "Q_DOXY_CTD": ["1_0"],
+                },
+                0,
+        ),
+        # case 12: H2S invalid, o2 btl nan and o2 <CTD valid
+        (
+                {
+                    "H2S": [5],
+                    "Q_H2S": ["S_0"],
+                    "DOXY_BTL": [np.nan],
+                    "Q_DOXY_BTL": ["1_0"],
+                    "DOXY_CTD": [10],
+                    "Q_DOXY_CTD": ["<_0"],
+                },
+                0,
+        ),
+        # case 13: H2S valid and >, o2 btl valid and o2 <CTD valid gives H2S 0
+        (
+                {
+                    "H2S": [100],
+                    "Q_H2S": [">_0"],
+                    "DOXY_BTL": [2],
+                    "Q_DOXY_BTL": ["1_0"],
+                    "DOXY_CTD": [10],
+                    "Q_DOXY_CTD": ["1_0"],
+                },
+                0,
+        ),
+        # case 14: H2S, ctd np.nan and o2 valid < gives H2S 0
+        (
+                {
+                    "H2S": [np.nan],
+                    "Q_H2S": ["1_0"],
+                    "DOXY_BTL": [2],
+                    "Q_DOXY_BTL": ["<_0"],
+                    "DOXY_CTD": [np.nan],
+                    "Q_DOXY_CTD": ["1_0"],
+                },
+                2,
+        ),
+    ),
+)
+def test_oxygen(given_data, expected_o2):
+    data = pd.DataFrame(given_data)
+
+    calculate.oxygen(data)
+    # test function against expected
+    np.testing.assert_equal(data["oxygen"].values[0], expected_o2)
