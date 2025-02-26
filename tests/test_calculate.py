@@ -14,8 +14,8 @@ from nodc_calculations import calculate
                 "Q_H2S": ["1_0"],
                 "AMON": [3],
                 "Q_AMON": ["1_0"],
-                "doxy": [5],
-                "Q_doxy": ["1_0"],
+                "DOXY_BTL": [5],
+                "Q_DOXY_BTL": ["1_0"],
                 "NTRZ": [np.nan],
                 "Q_NTRZ": ["1_0"],
                 "NTRA": [2],
@@ -25,15 +25,15 @@ from nodc_calculations import calculate
             },
             3.0,
         ),
-        # case 2: no H2S or AMON, below det doxy, correct NTRZ, stb use AMON
+        # case 2: no H2S or AMON, below det DOXY_BTL, correct NTRZ, stb use AMON
         (
             {
                 "H2S": [np.nan],
                 "Q_H2S": ["4_0"],
                 "AMON": [np.nan],
                 "Q_AMON": ["4_0"],
-                "doxy": [0.5],
-                "Q_doxy": ["6_0"],
+                "DOXY_BTL": [0.5],
+                "Q_DOXY_BTL": ["6_0"],
                 "NTRZ": [3],
                 "Q_NTRZ": ["1_0"],
                 "NTRA": [np.nan],
@@ -43,15 +43,15 @@ from nodc_calculations import calculate
             },
             np.nan,
         ),
-        # case 3: incorrect H2S and AMON, below det doxy, correct NTRZ, stb use AMON
+        # case 3: incorrect H2S and AMON, below det DOXY_BTL, correct NTRZ, stb use AMON
         (
             {
                 "H2S": [5],
                 "Q_H2S": ["4_0"],
                 "AMON": [10],
                 "Q_AMON": ["4_0"],
-                "doxy": [0.5],
-                "Q_doxy": ["6_0"],
+                "DOXY_BTL": [0.5],
+                "Q_DOXY_BTL": ["6_0"],
                 "NTRZ": [3],
                 "Q_NTRZ": ["1_0"],
                 "NTRA": [3],
@@ -61,15 +61,15 @@ from nodc_calculations import calculate
             },
             np.nan,
         ),
-        # case 4: low correct doxy, no AMON data, set to nan
+        # case 4: low correct DOXY_BTL, no AMON data, set to nan
         (
             {
                 "H2S": [np.nan],
                 "Q_H2S": ["1_0"],
                 "AMON": [np.nan],
                 "Q_AMON": ["1_0"],
-                "doxy": [1],
-                "Q_doxy": ["1_0"],
+                "DOXY_BTL": [1],
+                "Q_DOXY_BTL": ["1_0"],
                 "NTRZ": [3],
                 "Q_NTRZ": ["1_0"],
                 "NTRA": [3],
@@ -79,7 +79,7 @@ from nodc_calculations import calculate
             },
             np.nan,
         ),
-        # case 5: low correct doxy, AMON below det, set to sum of all (AMON+NTRZ or AMON+NTRI+NTRA)
+        # case 5: low correct DOXY_BTL, AMON below det, set to sum of all (AMON+NTRZ or AMON+NTRI+NTRA)
         # this test differs to sharktoolbox get_din() which returns 3 (NTRZ) while the new function returns (AMON+NTRA) 
         (
             {
@@ -87,8 +87,8 @@ from nodc_calculations import calculate
                 "Q_H2S": ["1_0"],
                 "AMON": [1],
                 "Q_AMON": ["6_0"],
-                "doxy": [1],
-                "Q_doxy": ["1_0"],
+                "DOXY_BTL": [1],
+                "Q_DOXY_BTL": ["1_0"],
                 "NTRZ": [3],
                 "Q_NTRZ": ["1_0"],
                 "NTRA": [3],
@@ -98,15 +98,15 @@ from nodc_calculations import calculate
             },
             4,
         ),
-        # case 6: correct doxy, AMON, NTRA, NTRI, no NTRZ
+        # case 6: correct DOXY_BTL, AMON, NTRA, NTRI, no NTRZ
         (
             {
                 "H2S": [np.nan],
                 "Q_H2S": ["0_0"],
                 "AMON": [5],
                 "Q_AMON": ["1_0"],
-                "doxy": [5],
-                "Q_doxy": ["1_0"],
+                "DOXY_BTL": [5],
+                "Q_DOXY_BTL": ["1_0"],
                 "NTRZ": [np.nan],
                 "Q_NTRZ": ["1_0"],
                 "NTRA": [3],
@@ -123,8 +123,8 @@ from nodc_calculations import calculate
                 "Q_H2S": ["0_0"],
                 "AMON": [5],
                 "Q_AMON": ["1_0"],
-                "doxy": [5],
-                "Q_doxy": ["1_0"],
+                "DOXY_BTL": [5],
+                "Q_DOXY_BTL": ["1_0"],
                 "NTRZ": [np.nan],
                 "Q_NTRZ": ["1_0"],
                 "NTRA": [3],
@@ -141,8 +141,8 @@ from nodc_calculations import calculate
                 "Q_H2S": ["0_0"],
                 "AMON": [5],
                 "Q_AMON": ["1_0"],
-                "doxy": [5],
-                "Q_doxy": ["1_0"],
+                "DOXY_BTL": [5],
+                "Q_DOXY_BTL": ["1_0"],
                 "NTRZ": [10],
                 "Q_NTRZ": ["1_0"],
                 "NTRA": [7],
@@ -159,8 +159,8 @@ from nodc_calculations import calculate
                 "Q_H2S": ["0_0"],
                 "AMON": [5],
                 "Q_AMON": ["1_0"],
-                "doxy": [5],
-                "Q_doxy": ["1_0"],
+                "DOXY_BTL": [5],
+                "Q_DOXY_BTL": ["1_0"],
                 "NTRZ": [np.nan],
                 "Q_NTRZ": ["1_0"],
                 "NTRA": [7],
@@ -177,8 +177,8 @@ from nodc_calculations import calculate
                 "Q_H2S": ["0_0"],
                 "AMON": [1],
                 "Q_AMON": ["6_0"],
-                "doxy": [5],
-                "Q_doxy": ["1_0"],
+                "DOXY_BTL": [5],
+                "Q_DOXY_BTL": ["1_0"],
                 "NTRZ": [11],
                 "Q_NTRZ": ["1_0"],
                 "NTRA": [7],
@@ -195,8 +195,8 @@ from nodc_calculations import calculate
                 "Q_H2S": ["0_0"],
                 "AMON": [0.5],
                 "Q_AMON": ["6_0"],
-                "doxy": [8],
-                "Q_doxy": ["1_0"],
+                "DOXY_BTL": [8],
+                "Q_DOXY_BTL": ["1_0"],
                 "NTRZ": [4],
                 "Q_NTRZ": ["6_0"],
                 "NTRA": [3],
@@ -231,8 +231,8 @@ def test_din(given_data, expected_din):
                 "Q_H2S": ["1_0", "1_0"],
                 "AMON": [1, 3],
                 "Q_AMON": ["6_0", "1_0"],
-                "doxy": [6, 6],
-                "Q_doxy": ["1_0", "1_0"],
+                "DOXY_BTL": [6, 6],
+                "Q_DOXY_BTL": ["1_0", "1_0"],
                 "NTRZ": [np.nan, np.nan],
                 "Q_NTRZ": ["1_0", "1_0"],
                 "NTRA": [2, 2],
@@ -261,7 +261,7 @@ def test_din_return_row_sum(given_data, expected_din):
         # case 1: all valid
         (
             {
-                "doxy": [5],
+                "oxygen": [5],
                 "temp": [10],
                 "salt": [30],
                 "depth": 0
@@ -271,7 +271,7 @@ def test_din_return_row_sum(given_data, expected_din):
          # case 2: all valid
         (
             {
-                "doxy": [5],
+                "oxygen": [5],
                 "temp": [10],
                 "salt": [30],
                 "depth": 500
@@ -281,7 +281,7 @@ def test_din_return_row_sum(given_data, expected_din):
         # case 3: one is nan
         (
             {
-                "doxy": [5],
+                "oxygen": [5],
                 "temp": [10],
                 "salt": [np.nan],
                 "depth": 0
@@ -308,7 +308,7 @@ def test_oxyen_saturation(given_data, expected_oxysat):
         # case 1: all valid
         (
             {
-                "doxy": [5, 6, 7],
+                "oxygen": [5, 6, 7],
                 "temp": [10, 15, 20],
                 "salt": [30, 31, 35],
                 "depth": [0, 5, 10]
@@ -322,7 +322,7 @@ def test_oxygen_saturation_on_dataframe_with_many_rows(given_data, expected):
 
     _, _, _ = calculate.oxygen_saturation(data)
     print(data.head())
-    assert(len(data['oxygen_saturation']) == len(data['doxy']))
+    assert(len(data['oxygen_saturation']) == len(data['oxygen']))
 
 @pytest.mark.parametrize(
     "given_data, expected_o2",

@@ -1,10 +1,8 @@
 from seawater import satO2
-from gsw import O2sol_SP_pt, O2sol, pot_rho_t_exact
-from gsw.conversions import p_from_z, t90_from_t68, pt_from_CT
-from gsw.density import rho
+from gsw import O2sol_SP_pt, pot_rho_t_exact
+from gsw.conversions import p_from_z, pt_from_CT
 import pandas as pd
 import numpy as np
-from nodc_calculations.convert import oxygen_ml2umol
 
 
 def _get_DIN(data: dict):
@@ -22,8 +20,8 @@ def _get_DIN(data: dict):
     AMON = data["AMON"][0]
     H2S = data["H2S"][0]
     Q_H2S = data["Q_H2S"][0].split("_")[0]
-    doxy = data["doxy"][0]
-    Q_doxy = data["Q_doxy"][0].split("_")[0]
+    doxy = data["DOXY_BTL"][0]
+    Q_doxy = data["Q_DOXY_BTL"][0].split("_")[0]
     Q_AMON = data["Q_AMON"][0].split("_")[0]
     Q_NTRA = data["Q_NTRA"][0].split("_")[0]
 
@@ -124,7 +122,7 @@ def dissolved_inorganic_nitrogen(df: pd.DataFrame):
     valid_H2S = np.logical_and(~pd.isna(df.H2S), ~df.Q_H2S.str.contains("6|4|3|B|S|<"))
     valid_AMON = np.logical_and(~pd.isna(df.AMON), ~df.Q_AMON.str.contains("4|3|B|S"))
     below_det_AMON = np.logical_and(~pd.isna(df.AMON), df.Q_AMON.str.contains("6|<"))
-    valid_low_doxy = np.logical_and(df.doxy <= 2, ~df.Q_doxy.str.contains("4|3|B|S"))
+    valid_low_doxy = np.logical_and(df.DOXY_BTL <= 2, ~df.Q_DOXY_BTL.str.contains("4|3|B|S"))
 
     df["din"] = np.nan
 
@@ -185,7 +183,7 @@ def oxygen_saturation(df: pd.DataFrame):
     gsw = O2sol_SP_pt(df.salt, pt) * (df.density / 1000) / 44.661
     sw = satO2(df.salt, df.temp)
 
-    df.loc[:, f"oxygen_saturation"] = df.doxy / gsw * 100
+    df.loc[:, "oxygen_saturation"] = df.oxygen / gsw * 100
 
     return gsw, sw, df
 
@@ -249,5 +247,5 @@ def oxygen(df: pd.DataFrame):
             ),
         ),
     )
-    print(df)
+
     return df
