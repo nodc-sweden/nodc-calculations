@@ -173,19 +173,28 @@ def density(df: pd.DataFrame):
     the sea pressure calculated from depth and latitude has very little effect on the results
     use constant latitude, comnsider using constant z as well
     """
-    df.loc[:, "density"] = pot_rho_t_exact(df.salt, df.temp, p_from_z(-df.depth, 58), 0)
+    return pot_rho_t_exact(df.salt, df.temp, p_from_z(-df.depth, 58), 0)
 
 
-def oxygen_saturation(df: pd.DataFrame):
+def oxygen_saturation(df: pd.DataFrame, oxygen_source_column: str):
     # oxygen_ml2umol(df, oxygen_column_name=oxygen_column_name)
-    pt = pt_from_CT(df.salt, df.temp)
-    density(df)
-    gsw = O2sol_SP_pt(df.salt, pt) * (df.density / 1000) / 44.661
-    sw = satO2(df.salt, df.temp)
+    if "salt" not in df.columns:
+        salinity = salt(df)
+    else:
+        salinity = df["salt"].to_list()
+    if "temp" not in df.columns:
+        temperature = temp(df)
+    else:
+        temperature = df["temp"].to_list()
+    pt = pt_from_CT(salinity, temperature)
 
-    df.loc[:, "oxygen_saturation"] = df.oxygen / gsw * 100
+    dens = density(df)
+    gsw = O2sol_SP_pt(salinity, pt) * (dens / 1000) / 44.661
+    sw = satO2(salinity, temperature)
 
-    return gsw, sw, df
+    oxygen_sat = df[oxygen_source_column] / gsw * 100
+
+    return gsw, sw, oxygen_sat
 
 
 def oxygen(df: pd.DataFrame):
@@ -249,3 +258,31 @@ def oxygen(df: pd.DataFrame):
     )
 
     return df
+
+def get_prio_par(prio1_par, prio2_par, q_prio1_par="", q_prio2_par=""):
+    if not np.isnan(prio1_par) and q_prio1_par not in ["B", "4"]:
+        return prio1_par
+    elif q_prio2_par not in ["B", "4"]:
+        return prio2_par
+    else:
+        return np.nan
+
+def salt(df: pd.DataFrame):
+    salinity = df.apply(
+        lambda row: get_prio_par(
+            row.SALT_CTD, row.SALT_BTL, row.Q_SALT_CTD, row.Q_SALT_BTL
+        ),
+        axis=1,
+    )
+
+    return salinity
+
+def temp(df: pd.DataFrame):
+    temperature = df.apply(
+        lambda row: get_prio_par(
+            row.TEMP_CTD, row.TEMP_BTL, row.Q_TEMP_CTD, row.Q_TEMP_BTL
+        ),
+        axis=1,
+    )
+
+    return temperature

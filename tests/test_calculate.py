@@ -293,9 +293,9 @@ def test_din_return_row_sum(given_data, expected_din):
 def test_oxyen_saturation(given_data, expected_oxysat):
     data = pd.DataFrame(given_data)
 
-    gsw, sw, _ = calculate.oxygen_saturation(data)
-
-    result = float("{:.3f}".format(data["oxygen_saturation"].values[0]))
+    gsw, sw, oxygen_saturation = calculate.oxygen_saturation(data, "oxygen")
+    print(oxygen_saturation[0])
+    result = float("{:.3f}".format(oxygen_saturation[0]))
     # test gsw against expected
     np.testing.assert_equal(result, expected_oxysat)
     # test gsw against sw
@@ -320,9 +320,9 @@ def test_oxyen_saturation(given_data, expected_oxysat):
 def test_oxygen_saturation_on_dataframe_with_many_rows(given_data, expected):
     data = pd.DataFrame(given_data)
 
-    _, _, _ = calculate.oxygen_saturation(data)
+    _, _, oxygen_saturation = calculate.oxygen_saturation(data, "oxygen")
     print(data.head())
-    assert(len(data['oxygen_saturation']) == len(data['oxygen']))
+    assert(len(oxygen_saturation) == len(data['oxygen']))
 
 @pytest.mark.parametrize(
     "given_data, expected_o2",
