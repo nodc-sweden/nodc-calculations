@@ -9,6 +9,7 @@ dependencies = [
     "pandas>=2.2.3",
     "seawater>=3.3.5",
     "gsw>=3.6.19",
+    "polars>=1.32.2",
 ]
 requires-python = ">=3.11"
 readme = "README.md"
@@ -18,7 +19,17 @@ license = {text = "MIT"}
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1",
+    "ruff>=0.12.9",
+]
+lint = [
+    "ruff>=0.12.9",
+]
+
 [project.optional-dependencies]
 dev = [
     "pytest>=8.3.3"
 ]
+
