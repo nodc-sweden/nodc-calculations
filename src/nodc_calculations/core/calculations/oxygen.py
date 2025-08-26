@@ -1,6 +1,7 @@
 from nodc_calculations.core.utils import is_valid, is_below_det
-from gsw import O2sol_SP_pt, pot_rho_t_exact
-from gsw.conversions import p_from_z, pt_from_CT
+from nodc_calculations.core.calculations.density import in_situ_density_core
+from gsw import O2sol_SP_pt, SA_from_SP, pt_from_t
+from gsw.conversions import p_from_z
 import numpy as np
 
 
@@ -60,7 +61,13 @@ def oxygen_core(rows):
     return results
 
 
-def oxygen_saturation_core(rows, oxygen_source_column: str = "oxygen", salinity_source_column: str = "salinity", temperature_source_column: str = "temperature", latitude: float = 58):
+def oxygen_saturation_core(
+    rows,
+    oxygen_source_column: str = "oxygen",
+    salinity_source_column: str = "salinity",
+    temperature_source_column: str = "temperature",
+    latitude: float = 58,
+):
     """
     Calculate oxygen saturation percentage.
     Input: list of dicts with keys 'salt', 'temp', 'depth', and oxygen_source_column
@@ -68,32 +75,49 @@ def oxygen_saturation_core(rows, oxygen_source_column: str = "oxygen", salinity_
     """
     results = []
     for row in rows:
-        sal = row.get(salinity_source_column)
-        temp = row.get(temperature_source_column)
+        practical_salinity = row.get(salinity_source_column)
+        temperature = row.get(temperature_source_column)
         depth = row.get("DEPH")
         oxy = row.get(oxygen_source_column)
+        latitude = row.get("sample_latitude_dd", row.get("LATIT_DD", 58.0))
+        longitude = row.get("sample_longitude_dd", row.get("LONGI_DD", 11.0))
 
         if (
-            sal is None
-            or temp is None
+            practical_salinity is None
+            or temperature is None
             or depth is None
             or oxy is None
-            or (isinstance(sal, float) and np.isnan(sal))
-            or (isinstance(temp, float) and np.isnan(temp))
+            or (isinstance(practical_salinity, float) and np.isnan(practical_salinity))
+            or (isinstance(temperature, float) and np.isnan(temperature))
             or (isinstance(depth, float) and np.isnan(depth))
             or (isinstance(oxy, float) and np.isnan(oxy))
         ):
             results.append(np.nan)
             continue
 
+        # pressure from pressure
+        pressure = p_from_z(-depth, latitude)
+
+        # absolute salinity
+        absolute_salinity = SA_from_SP(
+            practical_salinity, pressure, longitude, latitude
+        )
+
         # potential temperature
-        pt = pt_from_CT(sal, temp)
+        potential_temperature = pt_from_t(
+            absolute_salinity, temperature, pressure, p_ref=0
+        )
 
         # density
-        dens = pot_rho_t_exact(sal, temp, p_from_z(-depth, latitude), 0)
+        dens = in_situ_density_core([row], salinity_source_column="salt")[0]
+        # dens = pot_rho_t_exact(sal, temp, p_from_z(-depth, latitude), 0)
 
         # oxygen solubility (converted to µmol/L)
-        gsw_val = O2sol_SP_pt(sal, pt) * (dens / 1000) / 44.661
+        gsw_val = (
+            O2sol_SP_pt(practical_salinity, potential_temperature)
+            * (dens / 1000)
+            / 44.661
+        )
 
         # saturation percentage
         oxy_sat = oxy / gsw_val * 100 if gsw_val else np.nan

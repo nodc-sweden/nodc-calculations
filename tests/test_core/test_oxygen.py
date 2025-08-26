@@ -220,12 +220,12 @@ def test_oxygen(input_rows, expected_o2):
         # case 1: all valid
         (
             [{"oxygen": 5, "temperature": 10, "salt": 30, "DEPH": 0}],
-            [76.559],
+            [76.688],
         ),
         # case 2: all valid
         (
             [{"oxygen": 5, "temperature": 10, "salt": 30, "DEPH": 500}],
-            [76.559],
+            [76.424],
         ),
         # case 3: one is nan
         (
@@ -234,7 +234,7 @@ def test_oxygen(input_rows, expected_o2):
         ),
     ),
 )
-def test_oxyen_saturation(input_rows, expected_oxysat):
+def test_oxygen_saturation(input_rows, expected_oxysat):
     print(input_rows)
     result = oxygen_saturation_core(input_rows, salinity_source_column="salt")
     print(result)

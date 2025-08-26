@@ -7,6 +7,10 @@ from .adapters import (
     oxygen_polars,
     ntrz_corr_pandas,
     ntrz_corr_polars,
+    density_pandas,
+    density_polars,
+    potential_density_pandas,
+    potential_density_polars,
 )
 
 __all__ = [
@@ -16,4 +20,8 @@ __all__ = [
     "oxygen_polars",
     "ntrz_corr_pandas",
     "ntrz_corr_polars",
+    "density_pandas",
+    "density_polars",
+    "potential_density_pandas",
+    "potential_density_polars",
 ]
