@@ -112,7 +112,7 @@ def oxygen_saturation_core(
         dens = in_situ_density_core([row], salinity_source_column="salt")[0]
         # dens = pot_rho_t_exact(sal, temp, p_from_z(-depth, latitude), 0)
 
-        # oxygen solubility (converted to µmol/L)
+        # oxygen solubility (converted to ml/L)
         gsw_val = (
             O2sol_SP_pt(practical_salinity, potential_temperature)
             * (dens / 1000)
